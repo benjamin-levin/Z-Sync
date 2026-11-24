@@ -17,7 +17,7 @@ Browser session cookies are checkpointed to device-only Keychain records, separa
 
 ### Pending browser entitlement
 
-After build 10, source configuration restores HTTP and HTTPS URL registration for the default-browser entitlement application. Build 10 itself does not declare those schemes and has no browser entitlement. Do not upload the changed configuration until Apple has approved `com.apple.developer.web-browser` and the entitlement has been enabled in the app and provisioning profile. Use a new build number for that release.
+After build 10, source configuration restores HTTP and HTTPS URL registration for the default-browser entitlement application. Build 10 itself does not declare those schemes and has no browser entitlement. Build 11 is being prepared with the scheme registration at the owner's explicit request. The managed browser entitlement remains absent until Apple approval and a matching provisioning profile. Upload acceptance and public TestFlight availability must be verified separately.
 
 The source uses WKWebView, provides URL/search entry without Mozilla sign-in, routes incoming web URLs into the browser, makes no associated-domain Universal Link claims, and contains none of the privacy usage keys prohibited by Apple's default-browser checklist. These source checks do not establish Apple approval or on-device passkey functionality; both remain pending.
 
