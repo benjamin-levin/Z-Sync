@@ -1,5 +1,15 @@
 # Z-Sync
 
+## Z-Sync Preview for iPhone and iPad
+
+This repository is Benjamin Levin's personal fork of Z-Sync. The iOS Preview source is on the [fix/ios-login-persistence branch](https://github.com/benjamin-levin/Z-Sync/tree/fix/ios-login-persistence). It uses Apple's WKWebView to browse websites, with URL entry and search available without signing in. Optional Mozilla sign-in syncs Zen spaces and tabs. Websites opened from a space use that space's separate website storage, and session cookies are saved securely on the device across app restarts.
+
+**[Install Z-Sync Preview through TestFlight](https://testflight.apple.com/join/H3U7JJUf).** A free TestFlight installation is required. On the welcome screen, enter a URL in **Search or enter an address** and tap **Go**, or choose **Browse without signing in**. No test account is required for basic browsing.
+
+The Preview's bundle identifier is `com.benjaminlevin.zsync.preview`. Default-browser eligibility and website passkeys are pending Apple's browser entitlement approval and a newly entitled release. See the [Preview release record](https://github.com/benjamin-levin/Z-Sync/blob/fix/ios-login-persistence/docs/preview-release.md) for verified build status.
+
+The store badges and documentation below describe the original upstream app, which is separate from this Preview.
+
 > Z-Sync is not affiliated with, endorsed by, or an official product of Zen Browser.
 
 <p align="center">
