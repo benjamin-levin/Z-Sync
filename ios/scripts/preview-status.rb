@@ -32,7 +32,7 @@ def api(token, method, route, body = nil, query = {})
 end
 
 app_id = '6834716453'
-number = ENV.fetch('PREVIEW_BUILD', '10')
+number = ENV.fetch('PREVIEW_BUILD', '11')
 groups = api(token, Net::HTTP::Get, "apps/#{app_id}/betaGroups")
 builds = api(token, Net::HTTP::Get, 'builds', nil, {'filter[app]' => app_id, 'sort' => '-uploadedDate', 'limit' => 10})
 build = builds.find { |item| item.dig('attributes', 'version') == number }
@@ -45,7 +45,11 @@ end
 if build
   result[:availability] = api(token, Net::HTTP::Get, "builds/#{build['id']}/buildBetaDetail")['attributes']
   if ENV['PREVIEW_ACTION'] == 'notes'
-    notes = 'Fixes website sign-ins being lost when workspace tabs unload or iOS closes the backgrounded app. Session cookies are saved securely on this iPhone and restored before pages load. Workspaces stay separate; signing out of a website or clearing website data removes the saved session.'
+    notes = if number == '11'
+      'Adds HTTP and HTTPS URL registration for default-browser entitlement evaluation. Website sign-ins remain saved securely on this iPhone across app restarts. Browsing is available without a Mozilla account. Default-browser selection and website passkeys still require Apple entitlement approval and a future entitled build.'
+    else
+      'Fixes website sign-ins being lost when workspace tabs unload or iOS closes the backgrounded app. Session cookies are saved securely on this iPhone and restored before pages load. Workspaces stay separate; signing out of a website or clearing website data removes the saved session.'
+    end
     existing = api(token, Net::HTTP::Get, "builds/#{build['id']}/betaBuildLocalizations")
     english = existing.find { |entry| entry.dig('attributes', 'locale') == 'en-US' }
     if english

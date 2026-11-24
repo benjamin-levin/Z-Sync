@@ -4,9 +4,9 @@
 
 | App | Channel | Version | Last build |
 | --- | ------- | ------- | ---------- |
-| Z-Sync Preview (`com.benjaminlevin.zsync.preview`) | Internal TestFlight | 1.6 | 10 |
+| Z-Sync Preview (`com.benjaminlevin.zsync.preview`) | Internal and public TestFlight | 1.6 | 11 |
 
-Build 10 is available to the existing Preview tester as of November 24, 2026. See [the personal Preview release record](preview-release.md) for source, validation, and its build workflow. The remaining sections describe the inherited upstream app and its separate release history.
+Build 11 is available through the [public TestFlight invitation](https://testflight.apple.com/join/H3U7JJUf) as of November 24, 2026. See [the personal Preview release record](preview-release.md) for source, validation, and its build workflow. The remaining sections describe the inherited upstream app and its separate release history.
 
 Store releases are maintainer-only: nothing here bumps a version, a build
 number, or uploads anything on its own. This file records **what is currently

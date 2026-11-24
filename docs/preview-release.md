@@ -5,8 +5,9 @@ This branch builds Benjamin's personal Z-Sync Preview, separate from the upstrea
 - Bundle: `com.benjaminlevin.zsync.preview`
 - App Store Connect app: `6834716453`
 - Last installed baseline: 1.6 (9), based on `ce78776` plus personal Preview changes.
-- Shipped: 1.6 (10), browser login persistence, November 24, 2026.
-- Source commit: `2f06d49` on `fix/ios-login-persistence`.
+- Shipped: 1.6 (11), HTTP/HTTPS registration plus browser login persistence, November 24, 2026.
+- Source commit: `71f3408` on `fix/ios-login-persistence`.
+- Public TestFlight: https://testflight.apple.com/join/H3U7JJUf
 - Build host: `mbp`; working directory `~/ci/zsync-login-repair/source`.
 
 The Preview uses standard preferences and Application Support, matching build 9. Its keychain identity and stable per-container WebKit identifiers must remain unchanged. The Share extension and managed default-browser entitlement are not in this build. The guest browser remains available.
@@ -17,13 +18,19 @@ Browser session cookies are checkpointed to device-only Keychain records, separa
 
 ### Pending browser entitlement
 
-After build 10, source configuration restores HTTP and HTTPS URL registration for the default-browser entitlement application. Build 10 itself does not declare those schemes and has no browser entitlement. Build 11 is being prepared with the scheme registration at the owner's explicit request. The managed browser entitlement remains absent until Apple approval and a matching provisioning profile. Upload acceptance and public TestFlight availability must be verified separately.
+Build 11 includes HTTP and HTTPS URL registration for the default-browser entitlement application. Build 10 does not declare those schemes. The managed browser entitlement remains absent until Apple approval and a matching provisioning profile; default-browser selection and website passkeys remain unavailable.
 
 The source uses WKWebView, provides URL/search entry without Mozilla sign-in, routes incoming web URLs into the browser, makes no associated-domain Universal Link claims, and contains none of the privacy usage keys prohibited by Apple's default-browser checklist. These source checks do not establish Apple approval or on-device passkey functionality; both remain pending.
 
+### Build 11
+
+App Store Connect build ID: `bd4196f4-9dfc-416b-b1af-911d657999f0`. Processing is `VALID`, internal state is `IN_BETA_TESTING`, and external state is `BETA_APPROVED`. Build 11 is assigned to both the internal **Z-Sync Preview** group and the external **Apple Entitlement Review** group. The existing public link is enabled with a 10-tester limit.
+
+The archive and upload succeeded on `mbp`; artifacts and logs are in `~/ci/zsync-login-repair/release-11/`. Upload completed November 24, 2026 at 17:33 EST. The compiled app's bundle identifier, version/build, HTTP/HTTPS schemes, and absence of prohibited privacy usage keys were verified. This release only changes URL registration and the build number from build 10; the 523-test application suite passed for build 10. No new full-suite run was needed for these configuration changes.
+
 ### Build 10
 
-Build 10 completed Apple processing (`VALID`) and is `IN_BETA_TESTING` in the existing internal **Z-Sync Preview** group. App Store Connect build ID: `9c9c34b8-ff2f-4855-a438-6f301b2e5b4f`. This release is available to the existing internal tester; it has not been submitted for external beta review.
+Build 10 completed Apple processing (`VALID`) and is `IN_BETA_TESTING` in the existing internal **Z-Sync Preview** group. App Store Connect build ID: `9c9c34b8-ff2f-4855-a438-6f301b2e5b4f`. It was also approved for the external group on November 24, 2026, before build 11 superseded it.
 
 The final signed simulator suite passed **523 tests with zero failures**. Results are on `mbp` at `~/ci/zsync-login-repair/signed-suite.xcresult`; the archive and upload logs are in `~/ci/zsync-login-repair/release-10/`. The uploaded archive's bundle identifier, version, build number, and signing entitlements were verified. Upload succeeded on November 24, 2026 at 17:11 EST.
 
