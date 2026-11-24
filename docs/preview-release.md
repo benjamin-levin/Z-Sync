@@ -5,7 +5,8 @@ This branch builds Benjamin's personal Z-Sync Preview, separate from the upstrea
 - Bundle: `com.benjaminlevin.zsync.preview`
 - App Store Connect app: `6834716453`
 - Last installed baseline: 1.6 (9), based on `ce78776` plus personal Preview changes.
-- Candidate: 1.6 (10), browser login persistence.
+- Shipped: 1.6 (10), browser login persistence, November 24, 2026.
+- Source commit: `2f06d49` on `fix/ios-login-persistence`.
 - Build host: `mbp`; working directory `~/ci/zsync-login-repair/source`.
 
 The Preview uses standard preferences and Application Support, matching build 9. Its keychain identity and stable per-container WebKit identifiers must remain unchanged. The Share extension and managed default-browser entitlement are not in this build. The guest browser remains available.
@@ -13,6 +14,10 @@ The Preview uses standard preferences and Application Support, matching build 9.
 Browser session cookies are checkpointed to device-only Keychain records, separately for the default store and each workspace container. Native persistent cookies retain their own expiration. Restoration completes before initial navigation; cookie deletions replace the checkpoint. Clear Website Data invalidates checkpoints before clearing WebKit and resumes an interrupted clear on launch. No cookie values are logged or checked into the repository.
 
 ## Validation and shipping
+
+Build 10 completed Apple processing (`VALID`) and is `IN_BETA_TESTING` in the existing internal **Z-Sync Preview** group. App Store Connect build ID: `9c9c34b8-ff2f-4855-a438-6f301b2e5b4f`. This release is available to the existing internal tester; it has not been submitted for external beta review.
+
+The final signed simulator suite passed **523 tests with zero failures**. Results are on `mbp` at `~/ci/zsync-login-repair/signed-suite.xcresult`; the archive and upload logs are in `~/ci/zsync-login-repair/release-10/`. The uploaded archive's bundle identifier, version, build number, and signing entitlements were verified. Upload succeeded on November 24, 2026 at 17:11 EST.
 
 Generate the project with `xcodegen generate` from `ios`. Run the test suite on a clean simulator. New regression tests cover container lifetime, cold restoration, security attributes, isolation, logout, clearing, newer-cookie precedence, and rejection of stale Keychain records after clearing.
 
