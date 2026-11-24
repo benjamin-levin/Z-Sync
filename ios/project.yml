@@ -37,6 +37,14 @@ targets:
         CFBundleName: Z-Sync
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        # Required for the pending default-browser entitlement request.
+        # Distribution must wait for the matching managed entitlement/signing.
+        CFBundleURLTypes:
+          - CFBundleURLName: com.benjaminlevin.zsync.preview.web
+            CFBundleTypeRole: Viewer
+            CFBundleURLSchemes:
+              - http
+              - https
         UILaunchScreen: {}
         CFBundleDevelopmentRegion: en
         UIRequiresFullScreen: true
