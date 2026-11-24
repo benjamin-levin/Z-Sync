@@ -539,7 +539,12 @@ final class MiniBrowserModel {
         guard webView == nil else { return }
         let view = MiniBrowserWebDriver.attach(to: self)
         if let history {
-            view.interactionState = history
+            Task { @MainActor [weak self, weak view] in
+                guard let view else { return }
+                await BrowserWebsiteData.prepare(store: view.configuration.websiteDataStore)
+                guard self?.webView === view else { return }
+                view.interactionState = history
+            }
         } else if let url = pageURL {
             load(url: url)
         }

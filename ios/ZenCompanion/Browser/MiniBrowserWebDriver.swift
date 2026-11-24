@@ -34,8 +34,8 @@ final class MiniBrowserWebDriver: NSObject, WKNavigationDelegate, WKUIDelegate {
     @discardableResult
     static func attach(to model: MiniBrowserModel, configuration popupConfiguration: WKWebViewConfiguration? = nil) -> WKWebView {
         let configuration = popupConfiguration ?? WKWebViewConfiguration()
-        if popupConfiguration == nil, let id = model.websiteDataStoreID {
-            configuration.websiteDataStore = WKWebsiteDataStore(forIdentifier: id)
+        if popupConfiguration == nil {
+            configuration.websiteDataStore = BrowserWebsiteData.dataStore(id: model.websiteDataStoreID)
         }
         // A popup's configuration carries the opener's content controller. The
         // lists and scripts are swapped per site, so each page needs its own.
@@ -314,7 +314,10 @@ final class MiniBrowserWebDriver: NSObject, WKNavigationDelegate, WKUIDelegate {
             MainActor.assumeIsolated { model?.prepareBlocking(for: url) }
         }
         guard let url = navigationAction.request.url, !BrowserNavigationPolicy.loadsInWebView(url) else {
-            decisionHandler(.allow, preferences)
+            Task { @MainActor in
+                await BrowserWebsiteData.prepare(store: webView.configuration.websiteDataStore)
+                decisionHandler(.allow, preferences)
+            }
             return
         }
         // Only a tap in the main frame may leave the app; a page that
@@ -461,6 +464,9 @@ final class MiniBrowserWebDriver: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        Task { @MainActor in
+            await BrowserWebsiteData.checkpoint(store: webView.configuration.websiteDataStore)
+        }
         // The reloaded document is laid out, but WebKit may still settle the
         // offset against the chrome's clearance; put the reader back after it.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { [weak self] in

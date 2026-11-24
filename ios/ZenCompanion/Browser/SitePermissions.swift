@@ -1,6 +1,7 @@
 import CryptoKit
 import Foundation
 import Observation
+import UIKit
 import WebKit
 
 /// What a site can ask for. The browser asks first; the system's own question
@@ -111,6 +112,69 @@ final class SitePermissionStore {
 /// What the browser keeps for websites. Open pages and history are the
 /// reader's own and stay.
 enum BrowserWebsiteData {
+    // WebKit keeps named stores weakly. If the last tab releases its store,
+    // the network session (including session cookies) can end. Tabs may sleep
+    // or close without ending the user's browsing session, so keep each
+    // container's store alive for the lifetime of the app.
+    @MainActor private static var containerStores: [UUID: WKWebsiteDataStore] = [:]
+    @MainActor private static var cookieSessions: [String: BrowserCookieSession] = [:]
+    @MainActor private static var clearing: Task<Void, Never>?
+
+    @MainActor
+    static func dataStore(id: UUID?) -> WKWebsiteDataStore {
+        let store: WKWebsiteDataStore
+        if let id {
+            store = containerStores[id] ?? WKWebsiteDataStore(forIdentifier: id)
+            containerStores[id] = store
+        } else { store = .default() }
+        _ = cookieSession(for: store)
+        Task { await prepare(store: store) }
+        return store
+    }
+
+    @MainActor
+    private static func cookieSession(for store: WKWebsiteDataStore) -> BrowserCookieSession {
+        let key = store.identifier?.uuidString.lowercased() ?? "default"
+        if let session = cookieSessions[key] { return session }
+        let session = BrowserCookieSession(store: store, persistence: KeychainBrowserCookiePersistence(storeKey: key))
+        cookieSessions[key] = session
+        return session
+    }
+
+    @MainActor
+    static func prepare(store: WKWebsiteDataStore) async {
+        guard store.isPersistent else { return }
+        // If iOS stopped a previous clear halfway through, finish clearing
+        // WebKit as well as the checkpoint before allowing any page to load.
+        if clearing == nil, KeychainBrowserCookiePersistence.clearIsPending { clearAll() }
+        if let clearing { await clearing.value }
+        await cookieSession(for: store).prepare()
+    }
+
+    @MainActor
+    static func checkpoint(store: WKWebsiteDataStore) async {
+        guard store.isPersistent, clearing == nil else { return }
+        await prepare(store: store)
+        await cookieSession(for: store).checkpoint()
+    }
+
+    @MainActor
+    static func saveForBackground() {
+        var identifier = UIBackgroundTaskIdentifier.invalid
+        let finish = {
+            guard identifier != .invalid else { return }
+            UIApplication.shared.endBackgroundTask(identifier)
+            identifier = .invalid
+        }
+        identifier = UIApplication.shared.beginBackgroundTask(withName: "Save browser sign-ins", expirationHandler: finish)
+        Task { @MainActor in
+            if clearing == nil {
+                for session in Array(cookieSessions.values) { await session.checkpoint() }
+            }
+            finish()
+        }
+    }
+
     /// The same container shares cookies across spaces within one Mozilla account.
     /// Keep the identifier stable when a space is renamed or a page is restored.
     static func storeID(accountID: String, container: String?) -> UUID? {
@@ -126,13 +190,17 @@ enum BrowserWebsiteData {
 
     @MainActor
     static func clearAll() {
-        let dataTypes = WKWebsiteDataStore.allWebsiteDataTypes()
-        WKWebsiteDataStore.default().removeData(ofTypes: dataTypes, modifiedSince: .distantPast) {}
-        WKWebsiteDataStore.fetchAllDataStoreIdentifiers { identifiers in
-            for identifier in identifiers {
-                WKWebsiteDataStore(forIdentifier: identifier)
-                    .removeData(ofTypes: dataTypes, modifiedSince: .distantPast) {}
+        guard clearing == nil else { return }
+        KeychainBrowserCookiePersistence.beginClearAll()
+        clearing = Task { @MainActor in
+            _ = dataStore(id: nil)
+            let identifiers: [UUID] = await withCheckedContinuation { continuation in
+                WKWebsiteDataStore.fetchAllDataStoreIdentifiers { continuation.resume(returning: $0) }
             }
+            for identifier in identifiers { _ = dataStore(id: identifier) }
+            for session in Array(cookieSessions.values) { await session.clear() }
+            KeychainBrowserCookiePersistence.finishClearAll()
+            clearing = nil
         }
         SitePermissionStore.shared.removeAll()
     }

@@ -10,20 +10,49 @@ enum Legal {
     static let writeReviewURL = URL(string: "https://apps.apple.com/app/id6804470330?action=write-review")!
 }
 
+/// Carries an incoming link through SwiftUI even if two consecutive URLs are identical.
+struct IncomingWebLink: Identifiable {
+    let id = UUID()
+    let url: URL
+
+    init?(_ url: URL) {
+        guard let scheme = url.scheme?.lowercased(), ["http", "https"].contains(scheme),
+              let host = url.host, !host.isEmpty else { return nil }
+        self.url = url
+    }
+}
+
 /// Entry point: sign-in landing or the spaces browser.
 struct HomeView: View {
     @State private var model = SessionModel()
+    @State private var incomingLink: IncomingWebLink?
+    @State private var guestBrowserOpen = false
 
     var body: some View {
         Group {
             if let snapshot = model.account {
-                SpacesBrowserView(account: snapshot)
+                SpacesBrowserView(account: snapshot, incomingLink: $incomingLink)
             } else {
-                SignInLandingView(model: model)
+                SignInLandingView(model: model, onBrowse: openGuestBrowser)
+                    .fullScreenCover(isPresented: $guestBrowserOpen) {
+                        MiniBrowserView(
+                            pages: .shared,
+                            space: .fallback,
+                            allSpaces: [],
+                            onDismiss: { guestBrowserOpen = false }
+                        )
+                    }
             }
         }
-        .onAppear {
+        .onAppear { model.load() }
+        .onOpenURL { url in
+            guard let link = IncomingWebLink(url) else { return }
             model.load()
+            if model.account == nil {
+                openGuestBrowser(url: link.url)
+            } else {
+                incomingLink = link
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .zenCompanionSignedOut)) { _ in
             model.signedOut()
@@ -32,11 +61,21 @@ struct HomeView: View {
             model.sessionExpired()
         }
     }
+
+    private func openGuestBrowser(url: URL?) {
+        model.showMozilla = false
+        model.showSignInHelp = false
+        OpenPagesStore.shared.allowsNormalTabs = false
+        OpenPagesStore.shared.open(url: url)
+        guestBrowserOpen = true
+    }
 }
 
 /// Minimal landing: brand + one button, no onboarding text walls.
 private struct SignInLandingView: View {
     @Bindable var model: SessionModel
+    let onBrowse: (URL?) -> Void
+    @State private var address = ""
 
     @Environment(\.colorScheme) private var scheme
 
@@ -93,6 +132,17 @@ private struct SignInLandingView: View {
                     .multilineTextAlignment(.center)
             }
             .buttonStyle(PressedButtonStyle())
+            TextField("Search or enter an address", text: $address)
+                .textFieldStyle(.roundedBorder)
+                .textContentType(.URL)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .submitLabel(.go)
+                .onSubmit {
+                    onBrowse(BrowserInput.resolve(address, engine: AppServices.searchEngine.current))
+                }
+            Button("Browse without signing in") { onBrowse(nil) }
+                .buttonStyle(PressedButtonStyle())
             Link("legal.privacy", destination: Legal.publicPolicyURL)
                 .zenFont(13, weight: .medium, design: .rounded)
                 .foregroundStyle(Palette.ink(scheme).opacity(0.45))

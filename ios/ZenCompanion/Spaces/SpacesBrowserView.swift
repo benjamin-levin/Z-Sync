@@ -16,6 +16,7 @@ struct BrowserTabSession: Identifiable {
 /// user's `ToolbarPlacement`.
 struct SpacesBrowserView: View {
     let account: AccountSnapshot
+    @Binding var incomingLink: IncomingWebLink?
 
     @Environment(\.colorScheme) private var scheme
     @Environment(\.scenePhase) private var scenePhase
@@ -53,8 +54,9 @@ struct SpacesBrowserView: View {
     /// was up; refresh once the last sheet is gone.
     @State private var pendingStaleReload = false
 
-    init(account: AccountSnapshot) {
+    init(account: AccountSnapshot, incomingLink: Binding<IncomingWebLink?> = .constant(nil)) {
         self.account = account
+        _incomingLink = incomingLink
         _model = State(initialValue: BrowserModel(account: account))
         _whatsNew = State(initialValue: WhatsNewStore())
     }
@@ -305,6 +307,14 @@ struct SpacesBrowserView: View {
                         Task { await model.reload() }
                     }
                 }
+        }
+        .onChange(of: incomingLink?.id, initial: true) { _, _ in
+            guard let link = incomingLink else { return }
+            incomingLink = nil
+            // System links use the regular store. Browsing from a Space
+            // continues to use that Space’s container.
+            let space = model.snapshot.spaces.first { $0.containerGuid == nil } ?? .fallback
+            presentBrowser(url: link.url, title: nil, space: space)
         }
         .task { await model.initialLoad() }
         .task(id: ContentBlocker.shared.asked) {

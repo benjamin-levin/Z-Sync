@@ -328,12 +328,15 @@ final class SaveKindPreferenceTests: XCTestCase {
     }
 
     func testAppGroupWinsOverStandardOnLoad() {
-        AppGroup.defaults.set(SaveKind.pinned.rawValue, forKey: key)
-        UserDefaults.standard.set(SaveKind.normal.rawValue, forKey: key)
-        XCTAssertEqual(SettingsModel().saveKind, .pinned)
+        // Preview intentionally shares one defaults domain; exercise the
+        // precedence policy with genuinely separate injected scopes.
+        let preferences = FakePreferences()
+        preferences.setString(SaveKind.pinned.rawValue, key, scope: .appGroup)
+        preferences.setString(SaveKind.normal.rawValue, key, scope: .standard)
+        XCTAssertEqual(SettingsModel(preferences: preferences).saveKind, .pinned)
 
-        AppGroup.defaults.set(SaveKind.normal.rawValue, forKey: key)
-        XCTAssertEqual(SettingsModel().saveKind, .normal)
+        preferences.setString(SaveKind.normal.rawValue, key, scope: .appGroup)
+        XCTAssertEqual(SettingsModel(preferences: preferences).saveKind, .normal)
     }
 
     func testStandardUsedWhenAppGroupMissing() {

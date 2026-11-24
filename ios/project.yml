@@ -33,7 +33,7 @@ targets:
     info:
       path: ZenCompanion/Info.plist
       properties:
-        CFBundleDisplayName: Z-Sync
+        CFBundleDisplayName: Z-Sync Preview
         CFBundleName: Z-Sync
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
@@ -64,22 +64,17 @@ targets:
     entitlements:
       path: ZenCompanion/ZenCompanion.entitlements
       properties:
-        com.apple.security.application-groups:
-          - group.de.kjell.zencompanion
         keychain-access-groups:
-          - $(AppIdentifierPrefix)de.kjell.zencompanion
+          - $(AppIdentifierPrefix)com.benjaminlevin.zsync.preview
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: de.kjell.zencompanion
+        PRODUCT_BUNDLE_IDENTIFIER: com.benjaminlevin.zsync.preview
         INFOPLIST_FILE: ZenCompanion/Info.plist
         CODE_SIGN_ENTITLEMENTS: ZenCompanion/ZenCompanion.entitlements
         GENERATE_INFOPLIST_FILE: false
         MARKETING_VERSION: "1.6"
-        CURRENT_PROJECT_VERSION: "7"
+        CURRENT_PROJECT_VERSION: "10"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-    dependencies:
-      - target: ShareExtension
-        embed: true
   ShareExtension:
     type: app-extension
     platform: iOS
@@ -96,7 +91,7 @@ targets:
     info:
       path: ShareExtension/Info.plist
       properties:
-        CFBundleDisplayName: Z-Sync
+        CFBundleDisplayName: Z-Sync Preview
         CFBundleName: Z-Sync
         CFBundlePackageType: XPC!
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
@@ -115,17 +110,17 @@ targets:
       path: ShareExtension/ShareExtension.entitlements
       properties:
         com.apple.security.application-groups:
-          - group.de.kjell.zencompanion
+          - group.com.benjaminlevin.zsync.preview
         keychain-access-groups:
-          - $(AppIdentifierPrefix)de.kjell.zencompanion
+          - $(AppIdentifierPrefix)com.benjaminlevin.zsync.preview
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: de.kjell.zencompanion.share
+        PRODUCT_BUNDLE_IDENTIFIER: com.benjaminlevin.zsync.preview.share
         INFOPLIST_FILE: ShareExtension/Info.plist
         CODE_SIGN_ENTITLEMENTS: ShareExtension/ShareExtension.entitlements
         GENERATE_INFOPLIST_FILE: false
         MARKETING_VERSION: "1.6"
-        CURRENT_PROJECT_VERSION: "7"
+        CURRENT_PROJECT_VERSION: "10"
         SKIP_INSTALL: true
   ZenCompanionTests:
     type: bundle.unit-test
@@ -151,7 +146,7 @@ targets:
         embed: false
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: de.kjell.zencompanion.tests
+        PRODUCT_BUNDLE_IDENTIFIER: com.benjaminlevin.zsync.preview.tests
         GENERATE_INFOPLIST_FILE: true
 schemes:
   ZenCompanion:

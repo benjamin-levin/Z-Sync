@@ -242,7 +242,7 @@ extension Notification.Name {
 /// Keychain `AfterFirstUnlockThisDeviceOnly` generic password, shared with the
 /// ShareExtension through the keychain-access-group.
 final class KeychainSecureStore: AccountSecureStore {
-    private static let service = "de.kjell.zencompanion.account"
+    private static let service = "com.benjaminlevin.zsync.preview.account"
     private static let accountKey = "fxa"
 
     private(set) var lastReadWasTransientFailure = false

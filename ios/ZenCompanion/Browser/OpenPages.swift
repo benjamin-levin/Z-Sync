@@ -620,6 +620,7 @@ final class OpenPagesStore: MiniBrowserPageHost {
 
     /// The app may not come back, so what would stay on close is saved now.
     private func didEnterBackground() {
+        BrowserWebsiteData.saveForBackground()
         for page in pages {
             saveIfItStays(page)
             if page.id == activeID { page.lastUsedAt = now() }

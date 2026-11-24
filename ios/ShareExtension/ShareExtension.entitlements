@@ -4,11 +4,11 @@
 <dict>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.de.kjell.zencompanion</string>
+		<string>group.com.benjaminlevin.zsync.preview</string>
 	</array>
 	<key>keychain-access-groups</key>
 	<array>
-		<string>$(AppIdentifierPrefix)de.kjell.zencompanion</string>
+		<string>$(AppIdentifierPrefix)com.benjaminlevin.zsync.preview</string>
 	</array>
 </dict>
 </plist>
